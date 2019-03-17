@@ -1,0 +1,80 @@
+
+0 1 2 
+
+0 1 2 
+
+1 1 1 0 0 
+1 1 1 0 0 
+1 1 1 0 0 
+0 0 0 0 0 
+0 0 0 0 0 
+
+Componenta conexa #1: 
+0 1 2 
+Componenta conexa #2: 
+3 
+Componenta conexa #3: 
+4 
+Nu este conex, are 3 componente conexe!
+
+0-> 1 
+1-> 0 2 
+2-> 1 
+3-> 
+4-> 
+
+0 1 2 3 
+
+0 1 2 3 
+
+1 1 1 1 
+1 1 1 1 
+1 1 1 1 
+1 1 1 1 
+
+Componenta conexa #1: 
+0 1 2 3 
+Este conex!
+
+0-> 1 
+1-> 0 2 
+2-> 1 3 
+3-> 2 
+
+0 1 2 3 4 
+
+0 1 2 3 4 
+
+1 1 1 1 1 
+1 1 1 1 1 
+1 1 1 1 1 
+1 1 1 1 1 
+1 1 1 1 1 
+
+Componenta conexa #1: 
+0 1 2 3 4 
+Este conex!
+
+0-> 1 
+1-> 0 2 
+2-> 1 3 
+3-> 2 4 
+4-> 3 
+
+0 
+
+0 
+
+0 0 0 
+0 1 1 
+0 1 1 
+
+Componenta conexa #1: 
+0 
+Componenta conexa #2: 
+1 2 
+Nu este conex, are 2 componente conexe!
+
+0-> 
+1-> 2 
+2-> 1 
