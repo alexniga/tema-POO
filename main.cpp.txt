@@ -1,0 +1,369 @@
+#include <iostream>
+#include <fstream>
+#include "graph.h"
+
+using namespace std;
+
+ifstream f("date.in");
+ofstream g("date.out");
+
+/// NOD
+Nod:: Nod(int v)
+{
+    this -> val = v;
+    this -> next = NULL;
+}
+void Nod:: set_Next(Nod *temp)
+{
+    this -> next = temp;
+}
+int Nod:: get_Val()
+{
+    return val;
+}
+/// List
+
+void List:: add(int val)
+{
+    Nod *temp = new Nod(val);
+    if (head == NULL)
+        head = temp;
+    else
+    {
+        Nod *t = head;
+        while (t -> Next() != NULL)
+            t = t -> Next();
+        t -> set_Next(temp);
+    }
+}
+
+/// Graf
+Graf:: Graf()
+{
+    this -> nr_noduri = 1;
+    lista = new List[nr_noduri];
+
+    viz_DF = new int[nr_noduri];
+    viz_BF = new int[nr_noduri];
+    coada_bf = new int[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        viz_DF[i] = viz_BF[i] = coada_bf[i] = 0;
+
+    mat_drum = new int*[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        mat_drum[i] = new int[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        for (int j = 0; i < nr_noduri; i++)
+            mat_drum[i][j] = 0;
+}
+istream & operator >>(istream &in, Graf &graph)
+{
+    int nr_, nr_noduri;
+    in >> nr_noduri >> nr_;
+    graph.nr_noduri = nr_noduri;
+    graph.lista = new List[nr_noduri];
+
+    graph.viz_DF = new int[nr_noduri];
+    graph.viz_BF = new int[nr_noduri];
+    graph.coada_bf = new int[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        graph.viz_DF[i] = graph.viz_BF[i] = graph.coada_bf[i] = 0;
+
+    graph.mat_drum = new int*[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        graph.mat_drum[i] = new int[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        for (int j = 0; i < nr_noduri; i++)
+            graph.mat_drum[i][j] = 0;
+    graph.nr_muchii = nr_;
+    for (int i = 0; i < graph.nr_muchii; i++)
+    {
+        int x, y;
+        in >> x >> y;
+        graph.add_Edge(x, y);
+        graph.add_Edge(y, x);
+    }
+    return in;
+}
+
+ostream &operator <<(ostream& out, const Graf &graph)
+{
+    for (int i = 0; i < graph.nr_noduri; i++)
+    {
+        Nod *temp = graph.lista[i].get_Head();
+        out << i  << "-> ";
+        while (temp != NULL)
+        {
+            out << temp -> get_Val() << " ";
+            temp = temp -> Next();
+        }
+        out << "\n";
+
+    }
+    return out;
+}
+
+Graf& Graf:: operator =(const Graf &graph)
+{
+    if (this == &graph)
+        return (*this);
+    delete []viz_BF;
+    delete []viz_DF;
+    delete []coada_bf;
+    delete []lista;
+    for (int i = 0; i < nr_noduri; i++)
+        delete []mat_drum[i];
+    delete []mat_drum;
+
+    lista = new List[graph.nr_noduri];
+    viz_DF = new int[graph.nr_noduri];
+    viz_BF = new int[graph.nr_noduri];
+    coada_bf = new int[graph.nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        viz_DF[i] = viz_BF[i] = coada_bf[i] = 0;
+
+    mat_drum = new int*[graph.nr_noduri];
+    for (int i = 0; i < graph.nr_noduri; i++)
+        mat_drum[i] = new int[graph.nr_noduri];
+    this->nr_noduri = graph.nr_noduri;
+    this->nr_muchii = graph.nr_muchii;
+    for (int i = 0; i < graph.nr_noduri; i++)
+    {
+        Nod *temp = graph.lista[i].get_Head();
+        while (temp != NULL)
+        {
+            this->add_Edge(i, temp->get_Val());
+            temp = temp -> Next();
+        }
+    }
+
+    return (*this);
+
+}
+
+void Graf:: DF(int x, const Graf &graph)
+{
+    g << x << " ";
+    viz_DF[x] = 1;
+    Nod *temp = graph.lista[x].get_Head();
+    while (temp != NULL)
+    {
+        if (!viz_DF[temp -> get_Val()])
+            DF(temp -> get_Val(), graph);
+        temp = temp -> Next();
+    }
+}
+void Graf:: DF_conex(int x, const Graf &graph)
+{
+    viz_DF[x] = 1;
+    Nod *temp = graph.lista[x].get_Head();
+    while (temp != NULL)
+    {
+        if (!viz_DF[temp -> get_Val()])
+            DF_conex(temp -> get_Val(), graph);
+        temp = temp -> Next();
+    }
+}
+
+void Graf:: BF(int x, const Graf &graph)
+{
+    g << "\n";
+    for (int i = 0; i < nr_noduri; i++)
+        viz_BF[i] = 0;
+    int prim, ultim;
+    viz_BF[x] = 1;
+    g << x << " ";
+    coada_bf[0]  = x;
+    prim = ultim = 0;
+    while (prim <= ultim)
+    {
+        x = coada_bf[prim++];
+        Nod *temp = graph.lista[x].get_Head();
+        while (temp != NULL)
+        {
+            if (!viz_BF[temp ->get_Val()])
+            {
+                g << temp ->get_Val() << " ";
+                viz_BF[temp ->get_Val()] = 1;
+                coada_bf[++ultim] = temp ->get_Val();
+            }
+            temp = temp-> Next();
+        }
+
+    }
+}
+
+void Graf:: Roy_Warshall(const Graf &graph)
+{
+    g << "\n";
+    for (int i = 0; i < nr_noduri; i++)
+        for (int j = 0; j < nr_noduri; j++)
+            mat_drum[i][j] = 0;
+    for (int i = 0; i < graph.nr_noduri; i++)
+    {
+        Nod *temp = graph.lista[i].get_Head();
+        while (temp != NULL)
+        {
+            mat_drum[i][temp ->get_Val()] = 1;
+            temp = temp -> Next();
+        }
+    }
+    for (int k = 0; k < nr_noduri; k++)
+        for (int i = 0; i < nr_noduri; i++)
+            for (int j = 0; j < nr_noduri; j++)
+            {
+                mat_drum[i][j] = mat_drum[i][j] || mat_drum[i][k] && mat_drum[k][j];
+            }
+    for (int i = 0; i < nr_noduri; i++)
+    {
+        for (int j = 0; j < nr_noduri; j++)
+            g << mat_drum[i][j] << " ";
+        g << "\n";
+    }
+}
+
+void Graf:: det_comp_conexe(Graf &graph)
+{
+    int nr = 0;
+    for (int  i = 0; i < nr_noduri; i++)
+        viz_BF[i] = 0;
+    for (int i = 0; i < nr_noduri; i++)
+    {
+        if (viz_BF[i] == 0)
+        {
+            nr++;
+            g << "\n" << "Componenta conexa #" << nr <<": ";
+            graph.BF(i, graph);
+        }
+    }
+}
+
+void Graf:: is_conex(Graf &graph)
+{
+    int nr = 0;
+    for (int  i = 0; i < nr_noduri; i++)
+        viz_DF[i] = 0;
+    for (int i = 0; i < nr_noduri; i++)
+    {
+        if (viz_DF[i] == 0)
+        {
+            nr++;
+            graph.DF_conex(i, graph);
+        }
+    }
+    if (nr == 1)
+        g << "\n" << "Este conex!" << "\n";
+    else
+        g << "\n" << "Nu este conex, are " << nr << " componente conexe!" << "\n";
+}
+
+Graf operator+(const Graf &graph1, const Graf &graph2)
+{
+    int a1[graph1.nr_noduri][graph1.nr_noduri], nr;
+    Graf rez;
+    rez = graph1;
+    for (int i = 0; i < graph1.nr_noduri; i++)
+        for (int j = 0; j < graph2.nr_noduri; j++)
+            a1[i][j] = 0;
+
+    for (int i = 0; i < graph1.nr_noduri; i++)
+    {
+        Nod *temp = graph1.lista[i].get_Head();
+        while (temp != NULL)
+        {
+            a1[i][temp ->get_Val()] = 1;
+            temp = temp -> Next();
+        }
+    }
+    for (int i = 0; i < graph2.nr_noduri; i++)
+    {
+        Nod *temp = graph2.lista[i].get_Head();
+        while (temp != NULL)
+        {
+            a1[i][temp ->get_Val()] = 1;
+            temp = temp -> Next();
+        }
+    }
+    nr = 0;
+    for (int i = 0; i < graph1.nr_noduri; i++)
+        for (int j  = 0; j < graph1.nr_noduri; j++)
+        {
+            if (a1[i][j] == 1)
+            {
+                rez.add_Edge(i, j);
+                nr++;
+            }
+        }
+    rez.nr_muchii = nr / 2;
+    return rez;
+}
+
+bool operator ==(const Graf &graph1, const Graf &graph2)
+{
+
+    if (graph1.nr_noduri != graph2.nr_noduri)
+        return 0;
+ //        cout << graph1.nr_muchii << " " << graph2.nr_muchii << "\n";
+    if (graph1.nr_muchii != graph2.nr_muchii)
+        return 0;
+
+    for (int i = 0; i < graph1.nr_noduri; i++)
+    {
+        Nod *temp1 = graph1.lista[i].get_Head();
+        Nod *temp2 = graph2.lista[i].get_Head();
+        while (temp1 != NULL || temp2 != NULL)
+        {
+            if (temp1->get_Val() != temp2->get_Val())
+                return 0;
+            temp1 = temp1 -> Next();
+            temp2 = temp2 -> Next();
+        }
+    }
+    return 1;
+
+}
+
+bool operator !=(const Graf &graph1, const Graf &graph2)
+{
+    if ((graph1 == graph2) == 0)
+        return 1;
+    return 0;
+}
+bool operator <(const Graf &graph1, const Graf &graph2)
+{
+    if (graph1.nr_noduri == graph2.nr_noduri)
+        return graph1.nr_muchii < graph2.nr_muchii;
+    return graph1.nr_noduri < graph2.nr_noduri;
+}
+
+int main()
+{
+    int n;
+    f >> n;
+    Graf *graph = new Graf[n];
+    for (int i = 0; i < n; i++)
+    {
+        f >> graph[i];
+    /*   if (i > 0)
+            graph[i] = graph[0];
+          if (i > 0)
+            cout << (graph[i] == graph[i - 1]);
+    */
+        g << "\n";
+        graph[i].DF(0, graph[i]);
+        g << "\n";
+        graph[i].BF(0, graph[i]);
+        g << "\n";
+        graph[i].Roy_Warshall(graph[i]);
+        graph[i].det_comp_conexe(graph[i]);
+        graph[i].is_conex(graph[i]);
+        g << "\n";
+        g << graph[i];
+
+        if (i > 0)
+            cout <<"graful " <<i << " < " << "graful " << i + 1 << "\n raspuns: " << (graph[i - 1] < graph[i]) << "\n";
+
+    }
+    delete []graph;
+    return 0;
+}

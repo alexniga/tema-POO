@@ -1,0 +1,66 @@
+#ifndef GRAPH_H_INCLUDED
+#define GRAPH_H_INCLUDED
+//#include <iostream>
+using namespace std;
+class Nod
+{
+    int val;
+    Nod *next;
+public:
+    Nod(int v);
+    Nod *Next(){return next; }
+    void set_Next(Nod *temp);
+    ~Nod(){ delete[]next;}
+    int get_Val();
+};
+
+class List
+{
+    Nod *head;
+public:
+    List(){ head = NULL; }
+    Nod *get_Head(){ return head; }
+    void add(int val);
+};
+
+class Graf
+{
+    int nr_noduri;
+    int nr_muchii;
+    int *viz_DF;
+    int *viz_BF;
+    int *coada_bf;
+    int **mat_drum;
+    List *lista;
+public:
+    Graf();
+    Graf& operator =(const Graf &graph);
+    void add_Edge(int x, int y) { lista[x].add(y); }
+    friend istream& operator >>(istream &in, Graf &garph);
+    friend ostream& operator <<(ostream& out, const Graf &graph);
+    friend Graf operator +(const Graf &graph1, const Graf &graph2);
+    friend bool operator ==(const Graf &graph1, const Graf &graph2);
+    friend bool operator !=(const Graf &graph1, const Graf &graph2);
+    friend bool operator <(const Graf &graph1, const Graf &graph2);
+    void DF(int x,const Graf &graph);
+    void DF_conex(int x,const Graf &graph);
+    void BF(int x, const Graf &graph);
+    void Roy_Warshall(const Graf &graph);
+    void det_comp_conexe(Graf &graph);
+    void is_conex(Graf &graph);
+
+    ~Graf()
+    {
+        delete []viz_BF;
+        delete []viz_DF;
+        delete []coada_bf;
+        delete []lista;
+        for (int i = 0; i < nr_noduri; i++)
+            delete []mat_drum[i];
+        delete []mat_drum;
+    }
+
+};
+
+
+#endif // GRAPH_H_INCLUDED
